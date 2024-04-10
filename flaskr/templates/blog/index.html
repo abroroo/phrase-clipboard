@@ -1,0 +1,67 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Phrases{% endblock %}</h1>
+{% if g.user %}
+<a class="action" href="{{ url_for('blog.create') }}">New</a>
+{% endif %} {% endblock %} {% block content %} {% for phrase in phrases %}
+<article class="phrase">
+  <div class="container">
+    <!-- Add an ID to the paragraph element for easier selection in JavaScript -->
+    <p
+      class="body"
+      id="phraseBody{{ loop.index }}"
+      onclick="copyToClipboard('phraseBody{{ loop.index }}')"
+    >
+      {{ phrase['body'] }}
+    </p>
+    {% if g.user['id'] == phrase['author_id'] %}
+    <a class="action" href="{{ url_for('blog.update', id=phrase['id']) }}"
+      >Edit</a
+    >
+    {% endif %}
+  </div>
+</article>
+<!-- Popup element for "Copied to clipboard" message -->
+<div id="copiedPopup" class="popup">Copied to clipboard</div>
+
+{% if not loop.last %}
+<hr />
+{% endif %} {% endfor %} {% if include_js %}
+<!-- JavaScript function to copy text to clipboard and show popup -->
+<script>
+  function copyToClipboard(elementId) {
+    var copyText = document.getElementById(elementId);
+    var range = document.createRange();
+    range.selectNode(copyText);
+    window.getSelection().removeAllRanges(); // Clear previous selections
+    window.getSelection().addRange(range); // Select the text
+    document.execCommand("copy"); // Copy the selected text to the clipboard
+    window.getSelection().removeAllRanges(); // Clear the selection after copying
+
+    // Show the popup
+    showPopup(elementId);
+  }
+
+  // Function to show the popup and fade it away after a certain period of time
+  function showPopup(elementId) {
+    var popup = document.getElementById("copiedPopup");
+    var pTag = document.getElementById(elementId);
+
+    // // Calculate the position of the p tag relative to the viewport
+    // var rect = pTag.getBoundingClientRect();
+    // var topOffset = rect.top + window.pageYOffset;
+    // var leftOffset = rect.left + window.pageXOffset;
+
+    // // Set the position of the popup
+    // popup.style.top = topOffset + "px";
+    // popup.style.left = leftOffset + "px";
+
+    popup.style.opacity = "1"; // Reset opacity to 1
+    popup.style.display = "block"; // Show the popup
+
+    setTimeout(function () {
+      popup.style.opacity = "0"; // Fade out the popup
+    }, 500); // Set the fade-out time in milliseconds (e.g., 2000ms = 2 seconds)
+  }
+</script>
+
+{% endif %} {% endblock %}
